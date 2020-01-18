@@ -14,5 +14,3 @@ gradlew
 gradlew.bat
 gradle/**
 
-# Etc
-.classpath
