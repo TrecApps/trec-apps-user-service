@@ -10,7 +10,7 @@ app/**
 bin/**
 
 #Ignore other gradle files
-gradlew
+
 gradlew.bat
 gradle/**
 
