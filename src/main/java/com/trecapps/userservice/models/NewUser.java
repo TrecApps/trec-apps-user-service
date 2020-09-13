@@ -4,6 +4,8 @@ import java.sql.Date;
 
 import org.springframework.stereotype.Component;
 
+import com.trecapps.userservice.models.primary.TrecAccount;
+
 @Component
 public class NewUser {
 

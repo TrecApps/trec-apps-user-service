@@ -1,10 +1,11 @@
-package com.trecapps.userservice.repositories;
+package com.trecapps.userservice.repositories.primary;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.trecapps.userservice.models.TrecAccount;
+import com.trecapps.userservice.models.primary.TrecAccount;
 
 @Repository
 public interface TrecAccountRepo extends JpaRepository<TrecAccount, Long> {

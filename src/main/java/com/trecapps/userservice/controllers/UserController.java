@@ -1,28 +1,27 @@
 package com.trecapps.userservice.controllers;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.trecapps.userservice.models.LogIn;
 import com.trecapps.userservice.models.NewUser;
 import com.trecapps.userservice.models.PasswordChange;
-import com.trecapps.userservice.models.TrecAccount;
+import com.trecapps.userservice.models.ReturnObj;
+import com.trecapps.userservice.models.primary.TrecAccount;
+import com.trecapps.userservice.services.JwtTokenService;
 import com.trecapps.userservice.services.TrecAccountService;
 
 @RestController
@@ -32,30 +31,41 @@ public class UserController {
 	TrecAccountService accountService;
 	
 	@Autowired
-	AuthenticationManager authManager;
+	JwtTokenService tokenService;
 	
-	@PostMapping("/CreateUser")
-	TrecAccount createUser(@RequestBody NewUser newUser,HttpServletRequest req, HttpServletResponse res)
+	@GetMapping(value="/CreateUser")
+	public ModelAndView formNewUser()
 	{
-		System.out.println("Controller:Create User: " + newUser);
-		TrecAccount account = accountService.createAccount(newUser);
-		authenticateUser(account, req);
-		return account;
+		ModelAndView view = new ModelAndView();
+		view.setViewName("register");
+		return view;
 	}
 	
-	private void authenticateUser(TrecAccount account,HttpServletRequest req)
+	@PostMapping("/CreateUser")
+	ResponseEntity<ReturnObj> createUser(RequestEntity<NewUser> entity)
 	{
-		if(account != null)
-		{			
-			UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(account.getUsername(), account.getPassword());
-			Authentication auth = authManager.authenticate(authReq);
-			SecurityContext sc = SecurityContextHolder.getContext();
-			
-			sc.setAuthentication(auth);
-			HttpSession session = req.getSession(true);
-		    session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, sc);
-		    account.setToken(null);
-		}
+		var body = entity.getBody();
+		
+		TrecAccount account = accountService.createAccount(body);
+		
+		if(account == null)
+			return new ResponseEntity<ReturnObj>(HttpStatus.BAD_REQUEST);
+		
+		ReturnObj ret = generateAuth(account);
+		
+		if(ret == null)
+			return new ResponseEntity<ReturnObj>(HttpStatus.INTERNAL_SERVER_ERROR);
+		return new ResponseEntity<ReturnObj>(ret, HttpStatus.OK);
+	}
+	
+	private ReturnObj generateAuth(TrecAccount account)
+	{
+		String token = tokenService.generateToken(account);
+		
+		if(token == null)
+			return null;
+		
+		return new ReturnObj(token, account.getUsername(), account.getFirstName(), account.getLastName(), account.getColor());
 	}
 	
 	@GetMapping("/UserExists")
@@ -65,8 +75,15 @@ public class UserController {
 	}
 	
 	@PostMapping("/LogIn")
-	TrecAccount logIn(@RequestBody LogIn login, HttpServletRequest req)
+	ResponseEntity<ReturnObj> logIn(RequestEntity<LogIn> entity)
 	{
+		LogIn login = entity.getBody();
+		
+		if(login == null)
+			return new ResponseEntity<ReturnObj>(HttpStatus.BAD_REQUEST);
+		
+		
+		
 		TrecAccount account = null;
 		if(login.getUsername() != null)
 		{
@@ -77,40 +94,63 @@ public class UserController {
 			account = accountService.logInEmail(login.getEmail(), login.getPassword());
 		}
 		
-		authenticateUser(account, req);
-		return account;
+		if(account == null)
+			return new ResponseEntity<ReturnObj>(HttpStatus.BAD_REQUEST);
+		
+		ReturnObj ret = generateAuth(account);
+		
+		if(ret == null)
+			return new ResponseEntity<ReturnObj>(HttpStatus.INTERNAL_SERVER_ERROR);
+		return new ResponseEntity<ReturnObj>(ret, HttpStatus.OK);
 	}
 	
 	@GetMapping("/Validate")
-	Boolean validate()
+	Boolean validate(HttpServletRequest req)
 	{
-		SecurityContext sc = SecurityContextHolder.getContext();
-		Authentication auth = sc.getAuthentication();
-		if(auth.isAuthenticated())
-		{
-			String username = auth.getPrincipal().toString();
-			TrecAccount account = accountService.getAccountByUserName(username);
-			System.out.println("Controller:GetValidate: " + account + " from username " + username);
-			accountService.sendverificationEmail(account);
+		String token = req.getHeader("Authorization");
+		if(token == null)
+			return false;
+		
+		TrecAccount account = tokenService.verifyToken(token);
+		
+		if(account == null)
+			return false;
+		
+		if(account.getIsValidated() != 0)
 			return true;
-		}
-		return false;
+		
+		accountService.sendverificationEmail(account);
+		return true;
 	}
 	
 	@PostMapping("/Validate")
-	Boolean validateWithToken(@RequestBody String validationToken)
+	ResponseEntity<String> validateWithToken(HttpServletRequest req)
 	{
-		Authentication authorized = SecurityContextHolder.getContext().getAuthentication();
+		String token = req.getHeader("Authorization");
+		String validationToken = req.getHeader("Verification");
 		
-		if(authorized.isAuthenticated())
-		{
-			String username = authorized.getPrincipal().toString();
-			 return accountService.verifyAccount(username, validationToken);
-		}
-		else
-		{
-			throw new AuthenticationCredentialsNotFoundException("User Session not authenticated");
-		}
+		if(token == null)
+			return new ResponseEntity<String>(HttpStatus.UNAUTHORIZED);
+		
+		TrecAccount account = tokenService.verifyToken(token);
+		
+		if(account == null)
+			return new ResponseEntity<String>(HttpStatus.UNAUTHORIZED);
+		
+		if(validationToken == null)
+			return new ResponseEntity<String>("Validation Token not provided in 'Verification' header", HttpStatus.BAD_REQUEST);
+		
+		account = accountService.verifyAccount(account.getUsername(), validationToken);
+		
+		if(account == null)
+			return new ResponseEntity<String>("Validation Token provided in 'Verification' header not correct", HttpStatus.BAD_REQUEST);
+		
+		String ret = tokenService.generateToken(account);
+		
+		if(ret == null)
+			return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
+		
+		return new ResponseEntity<String>(ret, HttpStatus.OK);
 	}
 	
 	@PutMapping("/UpdateUser")

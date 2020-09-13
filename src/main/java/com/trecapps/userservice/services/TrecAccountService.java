@@ -3,7 +3,7 @@ package com.trecapps.userservice.services;
 import org.springframework.stereotype.Service;
 
 import com.trecapps.userservice.models.NewUser;
-import com.trecapps.userservice.models.TrecAccount;
+import com.trecapps.userservice.models.primary.TrecAccount;
 
 @Service
 public interface TrecAccountService {
@@ -13,7 +13,7 @@ public interface TrecAccountService {
 	TrecAccount getAccountByEmail(String userEmail);
 	TrecAccount updatePassword(long id, String oldPassword, String newPassword);
 	
-	boolean verifyAccount(String username, String validationCode);
+	TrecAccount verifyAccount(String username, String validationCode);
 	void sendverificationEmail(TrecAccount account);
 	
 	TrecAccount createAccount(NewUser newUser);

@@ -1,10 +1,10 @@
-package com.trecapps.userservice.repositories;
+package com.trecapps.userservice.repositories.primary;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.trecapps.userservice.models.TrecOauthClient;
+import com.trecapps.userservice.models.primary.TrecOauthClient;
 
 @Repository
 public interface TrecOauthClientRepo extends JpaRepository<TrecOauthClient, String> {

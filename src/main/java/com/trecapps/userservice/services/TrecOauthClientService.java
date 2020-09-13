@@ -1,18 +1,16 @@
 package com.trecapps.userservice.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.oauth2.provider.ClientDetails;
-import org.springframework.security.oauth2.provider.ClientDetailsService;
-import org.springframework.security.oauth2.provider.ClientRegistrationException;
 import org.springframework.stereotype.Service;
 
-import com.trecapps.userservice.models.TrecAccount;
-import com.trecapps.userservice.models.TrecOauthClient;
-import com.trecapps.userservice.repositories.TrecOauthClientRepo;
+import com.trecapps.userservice.models.primary.TrecAccount;
+import com.trecapps.userservice.models.primary.TrecOauthClient;
+import com.trecapps.userservice.repositories.primary.TrecOauthClientRepo;
 
 
 @Service
-public class TrecOauthClientService implements ClientDetailsService {
+public class TrecOauthClientService // implements ClientDetailsService 
+{
 
 	@Autowired
 	TrecOauthClientRepo oauthRepo;
@@ -25,8 +23,8 @@ public class TrecOauthClientService implements ClientDetailsService {
 	
 	
 	
-	@Override
-	public ClientDetails loadClientByClientId(String clientId) throws ClientRegistrationException {
+	public TrecOauthClient loadClientByClientId(String clientId) 
+	{
 		return oauthRepo.getOne(clientId);
 	}
 	

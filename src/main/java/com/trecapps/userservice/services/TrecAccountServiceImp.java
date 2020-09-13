@@ -3,21 +3,25 @@ package com.trecapps.userservice.services;
 import javax.mail.MessagingException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import com.trecapps.userservice.models.NewUser;
-import com.trecapps.userservice.models.TrecAccount;
-import com.trecapps.userservice.repositories.TrecAccountRepo;
+import com.trecapps.userservice.models.primary.TrecAccount;
+import com.trecapps.userservice.models.secondary.UserSalt;
+import com.trecapps.userservice.repositories.primary.TrecAccountRepo;
+import com.trecapps.userservice.repositories.secondary.UserSaltRepo;
 
 @Service("TrecAccountService")
-public class TrecAccountServiceImp implements TrecAccountService,  UserDetailsService {
+public class TrecAccountServiceImp implements TrecAccountService//,  UserDetailsService
+{
 
 	@Autowired
 	TrecAccountRepo trecRepo;
+	
+	@Autowired
+	UserSaltRepo saltRepo;
 	
 	@Autowired
 	TrecEmailService emailer;
@@ -28,8 +32,6 @@ public class TrecAccountServiceImp implements TrecAccountService,  UserDetailsSe
                                 + "abcdefghijklmnopqrstuvxyz";
     final int RANDOM_STRING_LENGTH = 20;
 	
-    @Autowired
-	BCryptPasswordEncoder encoder;
 	
 	public TrecAccount getAccountById(long id)
 	{	
@@ -52,15 +54,31 @@ public class TrecAccountServiceImp implements TrecAccountService,  UserDetailsSe
 		if(account == null)
 			return null;
 		
-		if(!encoder.matches(oldPassword, account.getToken()))
+		
+		UserSalt us = saltRepo.getOne(account.getAccountId());
+		
+		if(us == null)
 			return null;
 		
+		String currentHash = account.getToken();
+		if(currentHash == null)
+			return null;
+		
+		if(currentHash.equals(BCrypt.hashpw(oldPassword, us.getSalt())))
+		{
+			String newSalt = BCrypt.gensalt();
+			
+			us.setSalt(newSalt);
+			
+			us = saltRepo.save(us);
+			
+			account.setToken(BCrypt.hashpw(newPassword, newSalt));
+			
+			return trecRepo.save(account);
+		}
 		
 		
-		account.setToken(encoder.encode(newPassword));
-		
-		trecRepo.save(account);
-		return account;
+		return null;
 	}
 
 	public TrecAccount createAccount(NewUser newUser) 
@@ -71,10 +89,23 @@ public class TrecAccountServiceImp implements TrecAccountService,  UserDetailsSe
 		
 		TrecAccount account = newUser.getTrecAccount();
 		
+		String newSalt = BCrypt.gensalt();
 		
-		account.setToken(encoder.encode(account.getToken()));
 		
-		return trecRepo.save(account);
+		
+		
+		
+		account.setToken(BCrypt.hashpw(newUser.getPassword(), newSalt));
+		
+		
+		account = trecRepo.save(account);
+		
+		UserSalt us = new UserSalt(account.getAccountId(), newSalt);
+		
+		
+		us = saltRepo.save(us);
+		
+		return account;
 	}
 
 	public TrecAccount logInUsername(String username, String password) 
@@ -83,7 +114,16 @@ public class TrecAccountServiceImp implements TrecAccountService,  UserDetailsSe
 		if(exists == null)
 			return null;
 		
-		if(encoder.matches(password, exists.getToken()))
+		UserSalt us = saltRepo.getOne(exists.getAccountId());
+		if(us == null)
+			return null;
+		
+		String curToken = exists.getToken();
+		
+		if(curToken == null)
+			return null;
+		
+		if(curToken.equals(BCrypt.hashpw(password, us.getSalt())))
 		{
 			return exists;
 		}
@@ -96,11 +136,20 @@ public class TrecAccountServiceImp implements TrecAccountService,  UserDetailsSe
 		if(exists == null)
 			return null;
 		
-		if(encoder.matches(password, exists.getToken()))
+		UserSalt us = saltRepo.getOne(exists.getAccountId());
+		if(us == null)
+			return null;
+		
+		String curToken = exists.getToken();
+		
+		if(curToken == null)
+			return null;
+		
+		if(curToken.equals(BCrypt.hashpw(password, us.getSalt())))
 		{
-			trecRepo.save(exists);
 			return exists;
 		}
+		
 		return null;
 	}
 
@@ -110,24 +159,42 @@ public class TrecAccountServiceImp implements TrecAccountService,  UserDetailsSe
 		if(account == null)
 			return false;
 		
-		if(!encoder.matches(password, account.getToken()))
+		UserSalt us = saltRepo.getOne(account.getAccountId());
+		if(us == null)
+			return false;
+		
+		String curToken = account.getToken();
+		
+		if(curToken == null)
+			return false;
+		
+		if(curToken.equals(BCrypt.hashpw(password, us.getSalt())))
 			return false;
 		trecRepo.delete(account);
 		return true; 
 	}
 
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		TrecAccount exists = trecRepo.getTrecAccountByUsername(username);
-		if(exists == null)
-			throw new UsernameNotFoundException("Could not find user by the name '" + username + "'");
-		return exists;
-	}
+//	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+//		TrecAccount exists = trecRepo.getTrecAccountByUsername(username);
+//		if(exists == null)
+//			throw new UsernameNotFoundException("Could not find user by the name '" + username + "'");
+//		return exists;
+//	}
 
 	public boolean verifyLoggedIn(long id, String username, String password) {
 		TrecAccount ta = trecRepo.getOne(id);
 		if(ta == null) return false;
 		
-		if(!encoder.matches(password, ta.getToken()))
+		UserSalt us = saltRepo.getOne(ta.getAccountId());
+		if(us == null)
+			return false;
+		
+		String curToken = ta.getToken();
+		
+		if(curToken == null)
+			return false;
+		
+		if(curToken.equals(BCrypt.hashpw(password, us.getSalt())))
 			return false;
 		
 		trecRepo.save(ta);
@@ -135,7 +202,7 @@ public class TrecAccountServiceImp implements TrecAccountService,  UserDetailsSe
 	}
 
 	@Override
-	public boolean verifyAccount(String username, String validationCode) {
+	public TrecAccount verifyAccount(String username, String validationCode) {
 		TrecAccount exists = trecRepo.getTrecAccountByUsername(username);
 		if(exists == null)
 		{
@@ -144,10 +211,9 @@ public class TrecAccountServiceImp implements TrecAccountService,  UserDetailsSe
 		if(exists.getValidationToken().equals(validationCode))
 		{
 			exists.setIsValidated(1);
-			trecRepo.save(exists);
-			return true;
+			return trecRepo.save(exists);
 		}
-		return false;
+		return null;
 	}
 
 	@Override

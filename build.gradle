@@ -28,13 +28,27 @@ repositories {
 }
 
 dependencies {
+	implementation 'javax.xml.bind:jaxb-api:2.3.0'
+	implementation 'javax.activation:activation:1.1'
+	implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.0'
+	
+	
+	
+
+    // This is needed so that multiple DataSources can be supported on Java 11
+	implementation 'org.javassist:javassist:3.23.1-GA'
+
     // This dependency is used by the application.
     implementation 'com.google.guava:guava:28.0-jre'
+
+	// Use JWT for token generation and verification
+	implementation 'com.auth0:java-jwt:+'
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
     
     implementation 'org.springframework.boot:spring-boot-dependencies:2.0.5.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-devtools'
     
@@ -50,7 +64,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	// https://mvnrepository.com/artifact/org.springframework.security.oauth/spring-security-oauth2
-	implementation group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.4.0.RELEASE'
+	//implementation group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.4.0.RELEASE'
 
 	
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -70,5 +84,5 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClassName = 'com.trecapps.user-service.App'
+    mainClassName = 'com.trecapps.userservice.App'
 }

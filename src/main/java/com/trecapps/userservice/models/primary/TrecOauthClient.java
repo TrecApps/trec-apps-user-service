@@ -1,7 +1,5 @@
-package com.trecapps.userservice.models;
+package com.trecapps.userservice.models.primary;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,16 +11,15 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.stereotype.Component;
 
-import com.trecapps.userservice.security.TrecAuthority;
+// import com.trecapps.userservice.security.TrecAuthority;
 
 @Component
 @Table
 @Entity
-public class TrecOauthClient implements ClientDetails{
+public class TrecOauthClient // implements ClientDetails
+{
 
 	/**
 	 * 
@@ -75,7 +72,6 @@ public class TrecOauthClient implements ClientDetails{
 	@Id
 	String clientId;
 	
-	@Override
 	public String getClientId() {
 		// TODO Auto-generated method stub
 		return clientId;
@@ -89,12 +85,27 @@ public class TrecOauthClient implements ClientDetails{
 	@Column
 	String resourceIds;
 
-	@Override
 	public Set<String> getResourceIds() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
+	
+	
+	/**
+	 * @return the serialversionuid
+	 */
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	/**
+	 * @param resourceIds the resourceIds to set
+	 */
+	public void setResourceIds(String resourceIds) {
+		this.resourceIds = resourceIds;
+	}
+
 	@Transient
 	public static final int CLIENT_TYPE_WEB_SERVICE = 0;
 	@Transient
@@ -123,13 +134,11 @@ public class TrecOauthClient implements ClientDetails{
 	@Column
 	String clientSecret;
 
-	@Override
 	public boolean isSecretRequired() {
 		// TODO Auto-generated method stub
 		return clientType == 0;
 	}
 
-	@Override
 	public String getClientSecret() {
 		if(isSecretRequired()) return clientSecret;
 		
@@ -141,64 +150,48 @@ public class TrecOauthClient implements ClientDetails{
 		this.clientSecret = clientSecret;
 	}
 
-	@Override
 	public boolean isScoped() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public Set<String> getScope() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public Set<String> getAuthorizedGrantTypes() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public Set<String> getRegisteredRedirectUri() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
-	public Collection<GrantedAuthority> getAuthorities() {
-		Collection<GrantedAuthority> ret = new ArrayList<>();
-		
-		ret.add(new TrecAuthority("CLIENT"));
-		
-		return ret;
-	}
 
-	@Override
+
 	public Integer getAccessTokenValiditySeconds() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public Integer getRefreshTokenValiditySeconds() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public boolean isAutoApprove(String scope) {		
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public Map<String, Object> getAdditionalInformation() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public String toString() {
 		return "TrecOauthClient [owner=" + owner + ", name=" + name + ", clientId=" + clientId + ", resourceIds="
 				+ resourceIds + ", clientType=" + clientType + ", clientSecret=" + clientSecret + "]";

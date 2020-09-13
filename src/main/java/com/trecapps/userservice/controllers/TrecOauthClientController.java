@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.trecapps.userservice.models.TrecAccount;
-import com.trecapps.userservice.models.TrecOauthClient;
+import com.trecapps.userservice.models.primary.TrecAccount;
+import com.trecapps.userservice.models.primary.TrecOauthClient;
 import com.trecapps.userservice.services.TrecAccountService;
 import com.trecapps.userservice.services.TrecOauthClientService;
 
