@@ -53,8 +53,26 @@ public class TrecAccount // implements UserDetails
 	String color;
 	String validationToken;
 	
+	
+	// Security Attributes
+	byte passwordMonthReset; // How many months before Password needs to be Changed
+	Date passwordChanged; // When the Password was last set
+	
+	byte timeForValidToken; // How long after login that the token should last (by 10 minutes)
+	byte validTimeFromActivity; // Whether apps should update the token every activity
+	
+	byte maxLoginAttempts; // How many login attempts per hour 
+	Date recentFailedLogin; 
+	byte failedLoginAttempts; // Set this to 0 initially
+	
+	byte lockTime;  // Time, in 10 minutes, to lock an account after max_login_attempts 
+	Date lockInit;  // When the account was locked (if NULL, assume unlocked)
+	
 	public TrecAccount(long accountId, String firstName, String lastName, String username, String mainEmail, String trecEmail,
-			String backupEmail, String token, Date birthday, int isValidated, String color, String validationToken) {
+			String backupEmail, String token, Date birthday, int isValidated, String color, String validationToken,
+			
+			byte passwordMonthReset, Date passwordChanged, byte timeForValidToken, byte validTimeFromActivity,
+			byte maxLoginAttempts,Date recentFailedLogin, byte failedLoginAttempts, byte lockTime, Date lockInit) {
 		super();
 		this.accountId = accountId;
 		this.firstName = firstName;
@@ -68,19 +86,148 @@ public class TrecAccount // implements UserDetails
 		this.isValidated = isValidated;
 		this.color = color;
 		this.validationToken = validationToken;
+		
+		// Set Security Attributes
+		this.passwordMonthReset = passwordMonthReset;
+		this.passwordChanged=passwordChanged;
+		this.timeForValidToken=timeForValidToken;
+		this.validTimeFromActivity=validTimeFromActivity;
+		this.maxLoginAttempts=maxLoginAttempts;
+		this.recentFailedLogin=recentFailedLogin;
+		this.failedLoginAttempts=failedLoginAttempts;
+		this.lockTime=lockTime;
+		this.lockInit=lockInit;
 	}
 	public TrecAccount() {
 		super();
 	}
+	
+	
+	
+	
+	
 	@Override
 	public String toString() {
-		return "TrecAccount [firstName=" + firstName + ", lastName=" + lastName + ", username=" + username
-				+ ", mainEmail=" + mainEmail + ", trecEmail=" + trecEmail + ", backupEmail=" + backupEmail + ", token="
-				+ token + ", birthday=" + birthday + ", isValidated=" + isValidated + ", color=" + color + "]";
+		return "TrecAccount [firstName=" + firstName + ", lastName=" + lastName + ", accountId=" + accountId
+				+ ", username=" + username + ", mainEmail=" + mainEmail + ", trecEmail=" + trecEmail + ", backupEmail="
+				+ backupEmail + ", token=" + token + ", birthday=" + birthday + ", isValidated=" + isValidated
+				+ ", color=" + color + ", validationToken=" + validationToken + ", passwordMonthReset="
+				+ passwordMonthReset + ", passwordChanged=" + passwordChanged + ", timeForValidToken="
+				+ timeForValidToken + ", validTimeFromActivity=" + validTimeFromActivity + ", maxLoginAttempts="
+				+ maxLoginAttempts + ", recentFailedLogin=" + recentFailedLogin + ", failedLoginAttempts="
+				+ failedLoginAttempts + ", lockTime=" + lockTime + ", lockInit=" + lockInit + "]";
 	}
 	
 	
 	
+	/**
+	 * @return the passwordMonthReset
+	 */
+	public byte getPasswordMonthReset() {
+		return passwordMonthReset;
+	}
+	/**
+	 * @param passwordMonthReset the passwordMonthReset to set
+	 */
+	public void setPasswordMonthReset(byte passwordMonthReset) {
+		this.passwordMonthReset = passwordMonthReset;
+	}
+	/**
+	 * @return the passwordChanged
+	 */
+	public Date getPasswordChanged() {
+		return passwordChanged;
+	}
+	/**
+	 * @param passwordChanged the passwordChanged to set
+	 */
+	public void setPasswordChanged(Date passwordChanged) {
+		this.passwordChanged = passwordChanged;
+	}
+	/**
+	 * @return the timeForValidToken
+	 */
+	public byte getTimeForValidToken() {
+		return timeForValidToken;
+	}
+	/**
+	 * @param timeForValidToken the timeForValidToken to set
+	 */
+	public void setTimeForValidToken(byte timeForValidToken) {
+		this.timeForValidToken = timeForValidToken;
+	}
+	/**
+	 * @return the validTimeFromActivity
+	 */
+	public byte getValidTimeFromActivity() {
+		return validTimeFromActivity;
+	}
+	/**
+	 * @param validTimeFromActivity the validTimeFromActivity to set
+	 */
+	public void setValidTimeFromActivity(byte validTimeFromActivity) {
+		this.validTimeFromActivity = validTimeFromActivity;
+	}
+	/**
+	 * @return the maxLoginAttempts
+	 */
+	public byte getMaxLoginAttempts() {
+		return maxLoginAttempts;
+	}
+	/**
+	 * @param maxLoginAttempts the maxLoginAttempts to set
+	 */
+	public void setMaxLoginAttempts(byte maxLoginAttempts) {
+		this.maxLoginAttempts = maxLoginAttempts;
+	}
+	/**
+	 * @return the recentFailedLogin
+	 */
+	public Date getRecentFailedLogin() {
+		return recentFailedLogin;
+	}
+	/**
+	 * @param recentFailedLogin the recentFailedLogin to set
+	 */
+	public void setRecentFailedLogin(Date recentFailedLogin) {
+		this.recentFailedLogin = recentFailedLogin;
+	}
+	/**
+	 * @return the failedLoginAttempts
+	 */
+	public byte getFailedLoginAttempts() {
+		return failedLoginAttempts;
+	}
+	/**
+	 * @param failedLoginAttempts the failedLoginAttempts to set
+	 */
+	public void setFailedLoginAttempts(byte failedLoginAttempts) {
+		this.failedLoginAttempts = failedLoginAttempts;
+	}
+	/**
+	 * @return the lockTime
+	 */
+	public byte getLockTime() {
+		return lockTime;
+	}
+	/**
+	 * @param lockTime the lockTime to set
+	 */
+	public void setLockTime(byte lockTime) {
+		this.lockTime = lockTime;
+	}
+	/**
+	 * @return the lockInit
+	 */
+	public Date getLockInit() {
+		return lockInit;
+	}
+	/**
+	 * @param lockInit the lockInit to set
+	 */
+	public void setLockInit(Date lockInit) {
+		this.lockInit = lockInit;
+	}
 	public long getAccountId() {
 		return accountId;
 	}

@@ -1,5 +1,8 @@
 package com.trecapps.userservice.services;
 
+import java.sql.Date;
+import java.util.Calendar;
+
 import javax.mail.MessagingException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,6 +131,17 @@ public class TrecAccountServiceImp implements TrecAccountService//,  UserDetails
 			return exists;
 		}
 		
+		exists.setFailedLoginAttempts((byte)(exists.getFailedLoginAttempts() + 1));
+		
+		byte failed = exists.getFailedLoginAttempts();
+		
+		if(failed >= exists.getMaxLoginAttempts())
+		{
+			exists.setLockInit(new Date(Calendar.getInstance().getTime().getTime()));
+		}
+		
+		trecRepo.save(exists);
+		
 		return null;
 	}
 
@@ -149,6 +163,17 @@ public class TrecAccountServiceImp implements TrecAccountService//,  UserDetails
 		{
 			return exists;
 		}
+		
+		exists.setFailedLoginAttempts((byte)(exists.getFailedLoginAttempts() + 1));
+		
+		byte failed = exists.getFailedLoginAttempts();
+		
+		if(failed >= exists.getMaxLoginAttempts())
+		{
+			exists.setLockInit(new Date(Calendar.getInstance().getTime().getTime()));
+		}
+		
+		trecRepo.save(exists);
 		
 		return null;
 	}

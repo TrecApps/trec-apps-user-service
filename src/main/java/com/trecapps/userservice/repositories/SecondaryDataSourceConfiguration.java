@@ -1,5 +1,8 @@
 package com.trecapps.userservice.repositories;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
@@ -39,12 +42,15 @@ public class SecondaryDataSourceConfiguration {
     @Bean(name = "secondaryEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean secondaryEntityManagerFactory(
             EntityManagerFactoryBuilder secondaryEntityManagerFactoryBuilder, @Qualifier("secondaryDataSource") DataSource secondaryDataSource) {
-
+    	Map<String, String> primaryJpaProperties = new HashMap<>();
+        primaryJpaProperties.put("hibernate.dialect", System.getenv("DB_DIALECT"));
+        primaryJpaProperties.put("hibernate.hbm2ddl.auto", "none");
 
         return secondaryEntityManagerFactoryBuilder
                 .dataSource(secondaryDataSource)
                 .packages("com.trecapps.userservice.models.secondary")
                 .persistenceUnit("secondaryDataSource")
+                .properties(primaryJpaProperties)
                 .build();
     }
 

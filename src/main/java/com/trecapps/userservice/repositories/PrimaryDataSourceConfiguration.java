@@ -53,8 +53,8 @@ public class PrimaryDataSourceConfiguration
 			@Qualifier("primaryDataSource") DataSource primaryDataSource) {
 		
 		Map<String, String> primaryJpaProperties = new HashMap<>();
-        primaryJpaProperties.put("hibernate.dialect", System.getProperty("hibernate.dialect"));
-        primaryJpaProperties.put("hibernate.hbm2ddl.auto", System.getProperty("hibernate.hbm2ddl.auto"));
+        primaryJpaProperties.put("hibernate.dialect", System.getenv("DB_DIALECT"));
+        primaryJpaProperties.put("hibernate.hbm2ddl.auto", "none");
 
         LocalContainerEntityManagerFactoryBean ret = primaryEntityManagerFactoryBuilder
 			.dataSource(primaryDataSource)
