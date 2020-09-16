@@ -55,6 +55,7 @@ public class PrimaryDataSourceConfiguration
 		Map<String, String> primaryJpaProperties = new HashMap<>();
         primaryJpaProperties.put("hibernate.dialect", System.getenv("DB_DIALECT"));
         primaryJpaProperties.put("hibernate.hbm2ddl.auto", "none");
+        primaryJpaProperties.put("hibernate.enable_lazy_load_no_trans", "true");
 
         LocalContainerEntityManagerFactoryBean ret = primaryEntityManagerFactoryBuilder
 			.dataSource(primaryDataSource)

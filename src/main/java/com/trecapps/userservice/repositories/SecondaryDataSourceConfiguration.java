@@ -46,6 +46,8 @@ public class SecondaryDataSourceConfiguration {
         primaryJpaProperties.put("hibernate.dialect", System.getenv("DB_DIALECT"));
         primaryJpaProperties.put("hibernate.hbm2ddl.auto", "none");
 
+        primaryJpaProperties.put("hibernate.enable_lazy_load_no_trans", "true");
+
         return secondaryEntityManagerFactoryBuilder
                 .dataSource(secondaryDataSource)
                 .packages("com.trecapps.userservice.models.secondary")
