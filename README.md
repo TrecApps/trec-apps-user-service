@@ -14,6 +14,8 @@ openssl pkcs8 -topk8 -inform PEM -in [private-key-name].pem -out [v8-private-key
 
 That last step is used because Openssl initially generates a _pkcs1_ formated private key and the dependencies used in reading private keys expect the key to be in _pkcs8_ .
 
+__Also: Remove the "Begin Public Key" line and "End Public Key" line and then remove the new line characters in your PUBLIC KEY (Don't tamper with your private key).__
+
 ## Environment Variables
 
 ### Primary Database

@@ -184,6 +184,10 @@ public class JwtTokenService {
 	
 	public TrecAccount verifyToken(String token)
 	{
+		
+		if(!setKeys())
+			return null;
+		
 		DecodedJWT decodedJwt = null;
 		try
 		{
