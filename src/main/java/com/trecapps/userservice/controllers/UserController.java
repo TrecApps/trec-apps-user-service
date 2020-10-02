@@ -3,11 +3,14 @@ package com.trecapps.userservice.controllers;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.ui.ModelMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,6 +22,7 @@ import org.springframework.web.servlet.ModelAndView;
 import com.trecapps.userservice.models.LogIn;
 import com.trecapps.userservice.models.NewUser;
 import com.trecapps.userservice.models.PasswordChange;
+import com.trecapps.userservice.models.ReturnAccount;
 import com.trecapps.userservice.models.ReturnObj;
 import com.trecapps.userservice.models.primary.TrecAccount;
 import com.trecapps.userservice.services.JwtTokenService;
@@ -95,7 +99,7 @@ public class UserController {
 		}
 		
 		if(account == null)
-			return new ResponseEntity<ReturnObj>(HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<ReturnObj>(HttpStatus.UNAUTHORIZED);
 		
 		ReturnObj ret = generateAuth(account);
 		
@@ -153,31 +157,125 @@ public class UserController {
 		return new ResponseEntity<String>(ret, HttpStatus.OK);
 	}
 	
-	@PutMapping("/UpdateUser")
-	Boolean updateUser(@RequestBody TrecAccount account)
+	@GetMapping("/UpdateUser")
+	ModelAndView getUpdatePage(@RequestParam("Redirect") String returnUrl)
 	{
-		Authentication authorized = SecurityContextHolder.getContext().getAuthentication();
+		ModelAndView view = new ModelAndView();
+		view.setViewName("AccountUpdate");
 		
-		if(authorized.isAuthenticated())
-		{
-			return accountService.updateUser(account);
-			
-		}
-		return false;
+		ModelMap map = view.getModelMap();
+		
+		if(returnUrl != null)
+			map.addAttribute("redirect", returnUrl);
+		else
+			map.addAttribute("redirect", "");
+		
+		return view;
 	}
 	
-	@PutMapping("/UpdatePassword")
-	Boolean updatePassword(@RequestBody PasswordChange passwordChange)
+	
+	@PostMapping("/UpdateUser")
+	ResponseEntity<ReturnAccount> logInToUpdate(@RequestBody LogIn login)
 	{
-		Authentication authorized = SecurityContextHolder.getContext().getAuthentication();
-		TrecAccount account;
-		if(authorized.isAuthenticated() && (account = accountService.getAccountByUserName(authorized.getPrincipal().toString())) != null)
+		TrecAccount account = null;
+		if(login.getUsername() != null)
 		{
-			return accountService.updatePassword(account.getAccountId(), passwordChange.getCurrentPassword(), passwordChange.getNewPassword())
-					!= null;
-			
+			account = accountService.logInUsername(login.getUsername(), login.getPassword());
 		}
-		return false;
+		else if(login.getEmail() != null)
+		{
+			account = accountService.logInEmail(login.getEmail(), login.getPassword());
+		}
+		
+		if(account == null)
+			return new ResponseEntity<ReturnAccount>(HttpStatus.UNAUTHORIZED);
+		
+		ReturnObj ret = generateAuth(account);
+		
+		if(ret == null)
+			return new ResponseEntity<ReturnAccount>(HttpStatus.INTERNAL_SERVER_ERROR);
+		return new ResponseEntity<ReturnAccount>(new ReturnAccount(account, ret.getToken()), HttpStatus.OK);
+	}
+	
+	
+	
+	@PutMapping(value = "/UpdateUser")
+	ResponseEntity<String> updateUser(RequestEntity<TrecAccount> entry)
+	{
+		HttpHeaders headers = entry.getHeaders();
+		
+		String token = headers.getFirst("Authorization");
+		
+		TrecAccount user = tokenService.verifyToken(token);
+		
+		if(user == null)
+		{
+			return new ResponseEntity<String>("Could Not Authenticate User", HttpStatus.UNAUTHORIZED);
+		}
+		
+		
+		TrecAccount newSettings = entry.getBody();
+		
+		user.setColor(newSettings.getColor());
+		user.setFirstName(newSettings.getFirstName());
+		user.setLastName(newSettings.getLastName());
+		user.setBackupEmail(newSettings.getBackupEmail());
+		user.setFailedLoginAttempts(newSettings.getFailedLoginAttempts());
+		user.setLockTime(newSettings.getLockTime());
+		user.setMaxLoginAttempts(newSettings.getMaxLoginAttempts());
+		user.setTimeForValidToken(newSettings.getTimeForValidToken());
+		user.setValidTimeFromActivity(newSettings.getValidTimeFromActivity());
+		
+		if(accountService.updateUser(user))
+			return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+		return new ResponseEntity<String>("Failed to Update User!", HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	
+	@GetMapping("/UpdatePassword")
+	ModelAndView getUpdatePasswordPage(@RequestParam("Redirect") String returnUrl)
+	{
+		ModelAndView view = new ModelAndView();
+		view.setViewName("AccountUpdate");
+		
+		ModelMap map = view.getModelMap();
+		
+		if(returnUrl != null)
+			map.addAttribute("redirect", returnUrl);
+		else
+			map.addAttribute("redirect", "");
+		
+		return view;
+	}
+	
+	
+	@PostMapping(value = "/UpdatePassword", consumes = "application/x-www-form-urlencoded")
+	Boolean updatePassword(RequestEntity<MultiValueMap<String, String>> entry)
+	{
+		MultiValueMap<String, String> map = entry.getBody();
+		
+		String username = map.getFirst("username");
+		String oldPassword = map.getFirst("oldPassword");
+		String newPassword = map.getFirst("newPassword");
+
+		TrecAccount account;
+		
+		if(username.indexOf('@') != -1)
+		{
+			account = accountService.logInEmail(username, oldPassword);
+		}
+		else
+		{
+			account = accountService.logInUsername(username, oldPassword);
+		}
+		
+		
+		if(account == null)
+		{
+			return false;
+		}
+		
+		return accountService.updatePassword(account.getAccountId(), oldPassword, newPassword) != null;
 	}
 	
 	@GetMapping("/Logout")

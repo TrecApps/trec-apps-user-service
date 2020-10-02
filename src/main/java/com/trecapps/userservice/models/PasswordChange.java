@@ -5,15 +5,30 @@ import org.springframework.stereotype.Component;
 @Component
 public class PasswordChange {
 
+	String username;
 	String currentPassword;
 	String newPassword;
 	public PasswordChange() {
 		super();
 	}
-	public PasswordChange(String currentPassword, String newPassword) {
+	public PasswordChange(String username, String currentPassword, String newPassword) {
 		super();
+		this.username = username;
 		this.currentPassword = currentPassword;
 		this.newPassword = newPassword;
+	}
+	
+	/**
+	 * @return the username
+	 */
+	public String getUsername() {
+		return username;
+	}
+	/**
+	 * @param username the username to set
+	 */
+	public void setUsername(String username) {
+		this.username = username;
 	}
 	public String getCurrentPassword() {
 		return currentPassword;
