@@ -220,7 +220,6 @@ public class UserController {
 		user.setFirstName(newSettings.getFirstName());
 		user.setLastName(newSettings.getLastName());
 		user.setBackupEmail(newSettings.getBackupEmail());
-		user.setFailedLoginAttempts(newSettings.getFailedLoginAttempts());
 		user.setLockTime(newSettings.getLockTime());
 		user.setMaxLoginAttempts(newSettings.getMaxLoginAttempts());
 		user.setTimeForValidToken(newSettings.getTimeForValidToken());

@@ -20,6 +20,8 @@
 			
 			let passBanner = document.getElementById("passWarning");
 			
+			let submitButton = document.getElementById("submitButton");
+			
 			if(p1 === p2 && p1.length > 8) {
 				passwordsMatch = true;
 				passBanner.hidden = true;
@@ -27,18 +29,56 @@
 				passwordsMatch = false;
 				passBanner.hidden = false;
 			}
+			
+			submitButton.hidden = !passBanner.hidden;
+		}
+		
+		function submitUpdate() {
+			
+			if(!passwordsMatch) return;
+			
+			let xhr = (new XMLHttpRequest() || new ActiveXObject("Microsoft.HTTPRequest"));
+			
+			let initUrl = window.location.href;
+			
+			initUrl += '/UpdatePassword';
+			
+			var form_data = new FormData();
+			
+			form_data.append("username", document.getElementById("usernameInput").value);
+			form_data.append("oldPassword", document.getElementById("passOld").value);
+			form_data.append("newPassword", document.getElementById("passNew1").value);
+			
+			
+			xhr.onreadystatechange = function() {
+				
+				if (this.readyState === 4) {
+					
+					document.getElementById("messageJumboHeader").innderHTML = this.responseText;
+					
+				}
+			}
+			
+			xhr.open("POST", initUrl);
+		
+			xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			xhr.send(form_data);
 		}
 		
 		
 		</script>
 	
 		<div class="container">
-			<div id="messageJumbo" class="jumbotron">${message}
+			<div id="messageJumbo" class="jumbotron">Enter Your Username, Old Password and New Password
+			
+			<h1 id="messageJumboHeader"></h1>
+			
 			</div>
 			
-			<form width="100%" class="form" id="Passwordform" action="/Secure/UpdateUser_" method="post" onsubmit="return passwordsMatch;">
+			<div width="100%" class="form" id="Passwordform">
 			
-				<input type="number" readonly="readonly" name="accountID" value="${account_id}">
+				<label id="usernameLabel">Username:</label>
+				<input id="usernameInput" type="text" name="username"><br>
 				
 				<label id="oldPassLabel">Old Password:</label>
 				<input id="passOld" type="password" name="oldPassword"><br>
@@ -50,8 +90,8 @@
 				<input id="passNew2" type="password" name="password" oninput="comparePasswords()"><br>
 				<h5 class="bg-danger" id="passWarning" hidden> Passwords must match and be 8+ characters in length!</h5>
 			
-				<input type="submit" class="btn btn-submit" value="Submit">
-			</form>
+				<button id="submitButton" class="btn btn-submit" onclick="submitUpdate()">Submit</button>
+			</div>
 		</div>
 	</body>
 </html>
