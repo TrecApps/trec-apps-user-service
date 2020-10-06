@@ -60,7 +60,9 @@ dependencies {
     implementation 'javax.validation:validation-api'
     
 	// To-Do: Add Database Driver Jar here
-	implementation fileTree(dir: "app/libs", includes: ['*.jar'])
+	implementation fileTree(dir: "app/libs", includes: ['*.jar']) // Oracle
+	implementation 'mysql:mysql-connector-java:+' // mySQL
+	
     
     implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
