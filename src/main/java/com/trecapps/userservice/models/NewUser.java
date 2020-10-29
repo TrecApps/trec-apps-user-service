@@ -18,6 +18,7 @@ public class NewUser {
 	String backupEmail;
 	String password;
 	Date birthday;
+	String clientId;
 	
 	// Security features
 	byte passwordMonthReset;  // How many months before Password needs to be Changed
@@ -49,7 +50,7 @@ public class NewUser {
 	}
 	
 	public NewUser(String firstName, String lastName, String username, String mainEmail, String trecEmail,
-			String backupEmail, String password, Date birthday) {
+			String backupEmail, String password, Date birthday, String clientId) {
 		super();
 		this.firstName = firstName;
 		this.lastName = lastName;
@@ -64,6 +65,8 @@ public class NewUser {
 		this.timeForValidToken = (byte)0;
 		this.maxLoginAttempts = (byte)5;
 		this.lockTime = (byte)6;
+		
+		this.clientId = clientId;
 	}
 	
 	
@@ -86,7 +89,7 @@ public class NewUser {
 	 */
 	public NewUser(String firstName, String lastName, String username, String mainEmail, String trecEmail,
 			String backupEmail, String password, Date birthday, byte passwordMonthReset, byte timeForValidToken,
-			byte validTimeFromActivity, byte maxLoginAttempts, byte lockTime) {
+			byte validTimeFromActivity, byte maxLoginAttempts, byte lockTime, String clientId) {
 		super();
 		this.firstName = firstName;
 		this.lastName = lastName;
@@ -101,10 +104,26 @@ public class NewUser {
 		this.validTimeFromActivity = validTimeFromActivity;
 		this.maxLoginAttempts = maxLoginAttempts;
 		this.lockTime = lockTime;
+		
+		this.clientId = clientId;
 	}
 
 
 
+
+	/**
+	 * @return the clientId
+	 */
+	public String getClientId() {
+		return clientId;
+	}
+
+	/**
+	 * @param clientId the clientId to set
+	 */
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
+	}
 
 	public NewUser() {
 		super();
