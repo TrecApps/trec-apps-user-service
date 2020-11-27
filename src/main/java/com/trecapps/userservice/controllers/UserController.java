@@ -84,23 +84,29 @@ public class UserController {
 		LogIn login = entity.getBody();
 		
 		if(login == null)
+		{
+			System.out.println("Login Object was Null!");
 			return new ResponseEntity<ReturnObj>(HttpStatus.BAD_REQUEST);
-		
+		}
 		
 		
 		TrecAccount account = null;
 		if(login.getUsername() != null)
 		{
+			System.out.println("Login using username");
 			account = accountService.logInUsername(login.getUsername(), login.getPassword());
 		}
 		else if(login.getEmail() != null)
 		{
+			System.out.println("Login using email");
 			account = accountService.logInEmail(login.getEmail(), login.getPassword());
 		}
 		
 		if(account == null)
+		{
+			System.out.println("Account was null!");
 			return new ResponseEntity<ReturnObj>(HttpStatus.UNAUTHORIZED);
-		
+		}
 		ReturnObj ret = generateAuth(account);
 		
 		if(ret == null)
